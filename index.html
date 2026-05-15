@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html lang="id">
 <head>
-  <title>Sistem Keuangan | MIS Baiturrahman Gubeng</title>
+  <title>Sistem Keuangan | Belajar Inovasi</title>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <base target="_top">
@@ -262,8 +262,7 @@
               <h5 class="fw-bold m-0 mb-3 mb-md-0"><i class="fa-solid fa-cash-register text-success me-2"></i> Riwayat Pembayaran Siswa</h5>
               <div class="d-flex gap-2">
                 <input type="text" class="form-control form-control-sm" placeholder="Cari Nama Siswa..." v-model="searchHistory">
-                <button v-if="session.role !== 'siswa'" @click="bukaModalBayar" class="btn btn-success btn-sm shadow-sm" style="white-space: nowrap;"><i class="fa-solid fa-circle-plus me-1"></i> Input Bayar</button>
-              </div>
+                </div>
             </div>
 
             <div class="table-responsive">
@@ -572,78 +571,6 @@
     </div>
   </div>
 
-  <div v-if="modalBayar.show" class="modal-custom">
-    <div class="modal-body-custom shadow-lg">
-      <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
-        <h5 class="fw-bold m-0 text-success"><i class="fa-solid fa-cash-register me-2"></i> Form Pembayaran Siswa</h5>
-        <i class="fa-solid fa-xmark fs-5 text-secondary cursor-pointer" @click="modalBayar.show = false"></i>
-      </div>
-
-      <div class="mb-3 row align-items-center">
-        <label class="col-sm-3 col-form-label fw-bold">Pilih Siswa</label>
-        <div class="col-sm-9">
-          <div class="input-group">
-            <input type="text" class="form-control bg-light" readonly :value="formBayar.siswa ? formBayar.siswa.nama + ' (' + formBayar.siswa.nis + ')' : ''" placeholder="Pilih Data Siswa...">
-            <button @click="bukaModalPilihSiswa('bayar')" class="btn btn-primary"><i class="fa-solid fa-magnifying-glass me-1"></i> Cari</button>
-          </div>
-        </div>
-      </div>
-      <div class="mb-3 row align-items-center">
-        <label class="col-sm-3 col-form-label fw-bold">No. Invoice</label>
-        <div class="col-sm-9"><input type="text" class="form-control bg-light" readonly v-model="formBayar.invoice"></div>
-      </div>
-      <div class="mb-3 row align-items-center">
-        <label class="col-sm-3 col-form-label fw-bold">Tanggal Bayar</label>
-        <div class="col-sm-9"><input type="date" class="form-control" v-model="formBayar.tglBayar"></div>
-      </div>
-      
-      <div class="mb-3 row align-items-center">
-        <label class="col-sm-3 col-form-label fw-bold">Pilih Tagihan</label>
-        <div class="col-sm-9">
-          <div class="input-group">
-            <select class="form-select" v-model="selectedTagihanToAdd" :disabled="!formBayar.siswa || listTagihanAktif.length === 0">
-                <option value="" disabled selected>-- Pilih Tagihan Aktif --</option>
-                <option v-for="t in listTagihanAktif" :value="t">{{ t.jenis }} (Sisa: Rp{{ formatRp(t.sisa) }})</option>
-            </select>
-            <button @click="tambahkanTagihanKeCartDropdown" class="btn btn-success" :disabled="!selectedTagihanToAdd || selectedTagihanToAdd === ''">
-                <i class="fa-solid fa-cart-plus me-1"></i> Tambah
-            </button>
-          </div>
-          <small v-if="formBayar.siswa && listTagihanAktif.length === 0" class="text-success mt-1 d-block"><i class="fa-solid fa-check-circle"></i> Tidak ada tagihan tertunggak.</small>
-          <small v-if="!formBayar.siswa" class="text-muted mt-1 d-block">Pilih siswa terlebih dahulu.</small>
-        </div>
-      </div>
-
-      <div class="table-responsive mt-3" v-if="formBayar.items.length > 0">
-        <table class="table table-bordered table-bayar">
-          <thead><tr><th>Nama Pembayaran</th><th>Tagihan & Sisa</th><th>Nominal Bayar</th><th>Aksi</th></tr></thead>
-          <tbody>
-            <tr v-for="(item, idx) in formBayar.items" :key="idx">
-              <td class="fw-bold">{{ item.jenis }}</td>
-              <td class="text-end bg-light">{{ formatRp(item.tagihan) }}<br><small class="text-danger fw-bold">Sisa: {{ formatRp(item.sisa) }}</small></td>
-              <td>
-                <div class="input-group input-group-sm">
-                  <span class="input-group-text">Rp</span>
-                  <input type="number" class="form-control text-end fw-bold" v-model.number="item.nilai_bayar">
-                </div>
-              </td>
-              <td class="text-center"><button @click="formBayar.items.splice(idx, 1)" class="btn btn-outline-danger btn-sm py-0 px-2"><i class="fa-solid fa-trash-can"></i></button></td>
-            </tr>
-            <tr class="fw-bold">
-              <td colspan="2" class="text-end align-middle">TOTAL DIBAYAR:</td>
-              <td class="text-end fs-6 text-success bg-success bg-opacity-10 border-success">{{ formatRp(totalTagihanCart) }}</td>
-              <td></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
-        <button @click="modalBayar.show = false" class="btn btn-light shadow-sm"><i class="fa-solid fa-xmark me-1"></i> Batal</button>
-        <button @click="submitPembayaranSiswa" class="btn btn-success px-4 shadow-sm" :disabled="formBayar.items.length === 0 || loading"><i class="fa-solid fa-circle-check me-1"></i> Proses Transaksi</button>
-      </div>
-    </div>
-  </div>
-
   <div v-if="modalSiswa.show" class="modal-custom" style="z-index: 1070;">
     <div class="modal-body-custom shadow-lg">
       <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
@@ -669,15 +596,79 @@
         <h5 class="fw-bold text-capitalize m-0 text-primary"><i :class="modal.action === 'add' ? 'fa-solid fa-circle-plus' : 'fa-solid fa-pen-to-square'"></i> {{ modal.action === 'add' ? 'Tambah' : 'Edit' }} Data</h5>
         <i class="fa-solid fa-xmark fs-4 text-secondary cursor-pointer" @click="modal.show = false"></i>
       </div>
+      
       <div class="row g-3">
         <div class="col-12" v-for="(head, i) in tableData.header" :key="i">
           <label class="form-label fw-bold text-muted small mb-1">{{ head }}</label>
-          <input v-model="modal.formData[i]" :type="head.toLowerCase().includes('password') ? 'password' : 'text'" class="form-control bg-light" :readonly="i === 0 && modal.action === 'add' && head.toLowerCase() === 'no'" :placeholder="i === 0 && modal.action === 'add' ? 'Auto Generate' : 'Input ' + head">
+
+          <template v-if="view === 'pendapatan'">
+            
+            <template v-if="head.toLowerCase() === 'nama'">
+              <select v-model="modal.formData[i]" class="form-select bg-light" @change="onNamaSistemChange(i)" :disabled="modal.action !== 'add'">
+                <option value="">-- Pilih Nama --</option>
+                <option v-for="u in listAllUsersSistem" :value="u.nama">{{ u.nama }} ({{ u.role.toUpperCase() }})</option>
+              </select>
+            </template>
+            
+            <template v-else-if="head.toLowerCase() === 'jenis' || head.toLowerCase().includes('invoice') || head.toLowerCase().includes('jml. bayar')">
+              <input v-model="modal.formData[i]" type="text" class="form-control bg-light" readonly>
+            </template>
+            
+            <template v-else-if="head.toLowerCase().includes('tgl') || head.toLowerCase().includes('tanggal')">
+              <input v-model="modal.formData[i]" type="date" class="form-control">
+            </template>
+            
+            <template v-else-if="head.toLowerCase() === 'pembayaran'">
+              <div v-if="modal.action === 'add'">
+                <div class="input-group mb-2">
+                  <select class="form-select" v-model="selectedTagihanSistem" :disabled="listTagihanSistem.length === 0">
+                    <option value="" disabled selected>-- Pilih Tagihan Tertunggak --</option>
+                    <option v-for="t in listTagihanSistem" :value="t">{{ t.jenis }} (Sisa: Rp{{ formatRp(t.sisa) }})</option>
+                  </select>
+                  <button class="btn btn-success" type="button" @click="addTagihanSistemToCart" :disabled="!selectedTagihanSistem">
+                    <i class="fa-solid fa-plus"></i>
+                  </button>
+                </div>
+                <small v-if="listTagihanSistem.length === 0 && modal.formData[1]" class="text-success mb-2 d-block"><i class="fa-solid fa-check-circle"></i> Tidak ada tagihan tertunggak aktif.</small>
+                
+                <table class="table table-sm table-bordered mt-2 table-bayar" v-if="cartTagihanSistem.length > 0">
+                  <thead class="bg-light"><tr><th>Nama Tagihan</th><th>Nominal Bayar</th><th style="width: 40px;"></th></tr></thead>
+                  <tbody>
+                    <tr v-for="(item, idx) in cartTagihanSistem" :key="idx">
+                      <td class="fw-bold">{{ item.jenis }}<br><small class="text-danger fw-normal">Sisa: Rp{{ formatRp(item.sisa) }}</small></td>
+                      <td>
+                        <div class="input-group input-group-sm">
+                          <span class="input-group-text">Rp</span>
+                          <input type="number" class="form-control text-end fw-bold" v-model.number="item.nilai_bayar" @input="updateFormDataPembayaran(i)">
+                        </div>
+                      </td>
+                      <td class="text-center"><button class="btn btn-outline-danger btn-sm py-0 px-2" @click="removeTagihanSistem(idx, i)"><i class="fa-solid fa-xmark"></i></button></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div v-else>
+                <textarea v-model="modal.formData[i]" class="form-control bg-light" rows="2" readonly></textarea>
+              </div>
+            </template>
+            
+            <template v-else>
+              <input v-model="modal.formData[i]" type="text" class="form-control bg-light">
+            </template>
+
+          </template>
+
+          <template v-else>
+             <input v-if="head.toLowerCase().includes('tgl') || head.toLowerCase().includes('tanggal')" v-model="modal.formData[i]" type="date" class="form-control">
+             <input v-else v-model="modal.formData[i]" :type="head.toLowerCase().includes('password') ? 'password' : 'text'" class="form-control bg-light" :readonly="i === 0 && modal.action === 'add' && head.toLowerCase() === 'no'" :placeholder="i === 0 && modal.action === 'add' ? 'Auto Generate' : 'Input ' + head">
+          </template>
+
         </div>
       </div>
+      
       <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
         <button @click="modal.show = false" class="btn btn-light shadow-sm"><i class="fa-solid fa-xmark me-1"></i> Batal</button>
-        <button @click="saveData" class="btn btn-primary shadow-sm px-4"><i class="fa-solid fa-floppy-disk me-1"></i> Simpan Data</button>
+        <button @click="saveData" class="btn btn-primary shadow-sm px-4" :disabled="view === 'pendapatan' && modal.action === 'add' && cartTagihanSistem.length === 0"><i class="fa-solid fa-floppy-disk me-1"></i> Simpan Data</button>
       </div>
     </div>
   </div>
@@ -701,7 +692,15 @@ createApp({
       form: { user: '', pass: '' },
       session: {}, tableData: { header: [], body: [] },
       stats: { summary: { saldo:0, pendapatan:0, pengeluaran:0, labaRugi:0, tagihan:0, kurang:0 }, recentPendapatan: [], chartPendapatan: {labels:[], data:[]} },
+      
+      // State Modal Generic
       modal: { show: false, action: 'add', identifier: null, formData: [] },
+      
+      // State Baru untuk Integrasi Pembayaran Dinamis
+      listAllUsersSistem: [],
+      listTagihanSistem: [],
+      cartTagihanSistem: [],
+      selectedTagihanSistem: '',
       
       historyPembayaranSiswa: [], searchHistory: '', expandedHistory: null,
       searchTagihan: '', expandedTagihan: null,
@@ -709,18 +708,11 @@ createApp({
       
       modalBuatTagihan: { show: false },
       formBuatTagihan: { tipe: 'semua', kelasTarget: '', siswa: null, jenis: '', nominal: '' },
-      
-      modalBayar: { show: false },
       modalSiswa: { show: false, context: 'bayar' },
-      
-      listSiswa: [], listTagihanAktif: [],
-      selectedTagihanToAdd: '', // Data untuk binding dropdown UI Baru
-      formBayar: { invoice: '', tglBayar: getToday(), siswa: null, items: [] }
+      listSiswa: []
     }
   },
   computed: {
-    totalTagihanCart() { return this.formBayar.items.reduce((sum, item) => sum + Number(item.nilai_bayar || 0), 0); },
-    
     filteredGroupedHistory() {
       let groups = {};
       this.historyPembayaranSiswa.forEach(row => {
@@ -767,12 +759,7 @@ createApp({
     window.addEventListener('afterprint', () => { this.printMode = ''; });
   },
   methods: {
-    // --- FUNGSI API CALL KE APPS SCRIPT ---
     async apiCall(action, payload = {}) {
-      if (SCRIPT_URL === 'URL_WEB_APP_APPS_SCRIPT_ANDA_DISINI') {
-        Swal.fire('Konfigurasi Dibutuhkan', 'Ganti variabel SCRIPT_URL dengan Web App URL Google Apps Script', 'error');
-        throw new Error("Missing Web App URL");
-      }
       try {
         const response = await fetch(SCRIPT_URL, {
           method: 'POST',
@@ -780,9 +767,7 @@ createApp({
           body: JSON.stringify({ action: action, ...payload })
         });
         return await response.json();
-      } catch (err) {
-        throw new Error("Koneksi API gagal.");
-      }
+      } catch (err) { throw new Error("Koneksi API gagal."); }
     },
     
     formatRp(angka) { if(!angka || isNaN(angka)) return "0"; return Number(angka).toLocaleString('id-ID'); },
@@ -810,7 +795,6 @@ createApp({
       this.session.lastView = menu;
       localStorage.setItem('erp_session', JSON.stringify(this.session));
       if(window.innerWidth < 768) this.sidebarOpen = false;
-
       if(menu === 'dashboard') this.loadDashboard();
       else if (menu === 'pembayaran_siswa') this.fetchHistorySiswa();
       else if(['users', 'siswa', 'tagihan_siswa', 'pendapatan', 'pengeluaran', 'utang_pegawai', 'jenis_pendapatan', 'kategori_pengeluaran'].includes(menu)) {
@@ -819,125 +803,41 @@ createApp({
     },
 
     async fetchHistorySiswa() {
-      this.loading = true;
-      this.expandedHistory = null;
+      this.loading = true; this.expandedHistory = null;
       try {
         const res = await this.apiCall('getModuleData', { moduleName: 'pendapatan', role: this.session.role, namaUser: this.session.nama });
         this.loading = false;
         if(res.success) {
           this.tableData = { header: res.header, body: res.body };
-          this.historyPembayaranSiswa = res.body.filter(r => r[2] === 'Siswa');
+          this.historyPembayaranSiswa = res.body.filter(r => r[2] === 'Siswa' || r[2] === 'siswa');
         }
       } catch(err) { this.loading = false; }
     },
     
-    doPrintInvoice(row) {
-      this.cetakData = row;
-      this.printMode = 'invoice';
-      this.$nextTick(() => { window.print(); });
-    },
-    doPrintRiwayat(group) {
-      this.cetakRiwayatData = group;
-      this.printMode = 'riwayat';
-      this.$nextTick(() => { window.print(); });
-    },
-    printReport(type) {
-      this.printMode = type;
-      this.$nextTick(() => { window.print(); });
-    },
+    doPrintInvoice(row) { this.cetakData = row; this.printMode = 'invoice'; this.$nextTick(() => { window.print(); }); },
+    doPrintRiwayat(group) { this.cetakRiwayatData = group; this.printMode = 'riwayat'; this.$nextTick(() => { window.print(); }); },
+    printReport(type) { this.printMode = type; this.$nextTick(() => { window.print(); }); },
     
-    async fetchDaftarKelas() {
-      try {
-        const res = await this.apiCall('getDaftarKelas');
-        this.listKelas = res;
-      } catch(e) {}
-    },
+    async fetchDaftarKelas() { try { const res = await this.apiCall('getDaftarKelas'); this.listKelas = res; } catch(e) {} },
     
     async submitBuatTagihan() {
       if(!this.formBuatTagihan.jenis || !this.formBuatTagihan.nominal) return Swal.fire('Peringatan', 'Lengkapi Jenis dan Nominal Tagihan', 'warning');
       if(this.formBuatTagihan.tipe === 'individu' && !this.formBuatTagihan.siswa) return Swal.fire('Peringatan', 'Pilih Siswa terlebih dahulu', 'warning');
       if(this.formBuatTagihan.tipe === 'kelas' && !this.formBuatTagihan.kelasTarget) return Swal.fire('Peringatan', 'Pilih Jenjang Kelas', 'warning');
-
       this.loading = true;
       try {
         const res = await this.apiCall('generateTagihan', { payload: this.formBuatTagihan });
         this.loading = false;
         if(res.success) {
-          this.toast(res.message);
-          this.modalBuatTagihan.show = false;
+          this.toast(res.message); this.modalBuatTagihan.show = false;
           this.formBuatTagihan = { tipe: 'semua', kelasTarget:'', siswa: null, jenis: '', nominal: '' };
           if(this.view === 'tagihan_siswa') this.fetchTableData();
         } else Swal.fire('Gagal', res.message, 'error');
       } catch(err) { this.loading = false; Swal.fire('Error', err.message, 'error'); }
     },
 
-    bukaModalBayar() {
-      const d = new Date();
-      // Format Invoice Dinamis Otomatis: INV/YYYYMMDD/XXXX
-      const invFormat = 'INV/' + d.getFullYear() + (d.getMonth()+1).toString().padStart(2,'0') + d.getDate().toString().padStart(2,'0') + '/' + Math.floor(1000 + Math.random() * 9000);
-      
-      this.formBayar = { invoice: invFormat, tglBayar: getToday(), siswa: null, items: [] };
-      this.listTagihanAktif = [];
-      this.selectedTagihanToAdd = '';
-      this.modalBayar.show = true;
-    },
-    
-    async bukaModalPilihSiswa(context) {
-      this.modalSiswa.context = context;
-      this.loading = true;
-      try {
-        const res = await this.apiCall('getDaftarSiswa');
-        this.loading = false; this.listSiswa = res; this.modalSiswa.show = true;
-        if(context === 'tagihan' && this.listKelas.length === 0) this.fetchDaftarKelas();
-      } catch(err) { this.loading = false; }
-    },
-    
-    pilihSiswa(s) {
-      if(this.modalSiswa.context === 'bayar') {
-        this.formBayar.siswa = s; 
-        this.formBayar.items = [];
-        this.modalSiswa.show = false;
-        
-        // Auto-fetch tagihan saat siswa dipilih
-        this.fetchTagihanAktifSiswa(); 
-      } else {
-        this.formBuatTagihan.siswa = s;
-        this.modalSiswa.show = false;
-      }
-    },
-    
-    async fetchTagihanAktifSiswa() {
-      this.loading = true;
-      try {
-        const res = await this.apiCall('getTagihanSiswa', { nis: this.formBayar.siswa.nis });
-        this.listTagihanAktif = res; 
-        this.loading = false;
-      } catch(err) { this.loading = false; this.toast('Gagal memuat tagihan anak', 'error'); }
-    },
-    
-    tambahkanTagihanKeCartDropdown() {
-      if(!this.selectedTagihanToAdd) return;
-      const exists = this.formBayar.items.find(i => i.id === this.selectedTagihanToAdd.id);
-      if(exists) return this.toast('Tagihan sudah masuk!', 'warning');
-      
-      this.formBayar.items.push({ ...this.selectedTagihanToAdd, nilai_bayar: this.selectedTagihanToAdd.sisa });
-      this.selectedTagihanToAdd = ''; // Reset UI dropdown ke default
-    },
-
-    async submitPembayaranSiswa() {
-      this.loading = true;
-      const payload = { siswa: this.formBayar.siswa, invoice: this.formBayar.invoice, tglBayar: this.formBayar.tglBayar, items: this.formBayar.items, total: this.totalTagihanCart };
-      try {
-        const res = await this.apiCall('prosesPembayaranSiswa', { payload: payload });
-        this.loading = false;
-        if(res.success) { this.toast(res.message); this.modalBayar.show = false; this.fetchHistorySiswa(); }
-        else Swal.fire('Gagal', res.message, 'error');
-      } catch(err) { this.loading = false; Swal.fire('Error', err.message, 'error'); }
-    },
-    
     async fetchTableData() {
-      this.loading = true;
-      this.expandedTagihan = null;
+      this.loading = true; this.expandedTagihan = null;
       try {
         const res = await this.apiCall('getModuleData', { moduleName: this.view, role: this.session.role, namaUser: this.session.nama });
         this.loading = false;
@@ -966,20 +866,27 @@ createApp({
       if(ctx && this.stats.chartPendapatan.labels.length > 0) {
         let chartColors = ['#3498db', '#2ecc71', '#f1c40f', '#e74c3c', '#9b59b6'];
         if(this.session.role === 'siswa') { chartColors = ['#e74c3c', '#2ecc71']; }
-
-        myChart = new Chart(ctx, {
-          type: 'doughnut',
-          data: {
-            labels: this.stats.chartPendapatan.labels,
-            datasets: [{ data: this.stats.chartPendapatan.data, backgroundColor: chartColors }]
-          },
+        myChart = new Chart(ctx, { type: 'doughnut', data: { labels: this.stats.chartPendapatan.labels, datasets: [{ data: this.stats.chartPendapatan.data, backgroundColor: chartColors }] },
           options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: {size: 10} } } } }
         });
       }
     },
     
-    openModal(action, row = null) {
+    // --- METHOD UNTUK DINAMIS MODAL ---
+    async openModal(action, row = null) {
       this.modal.action = action;
+      
+      if(this.view === 'pendapatan' && this.listAllUsersSistem.length === 0) {
+          try {
+              const res = await this.apiCall('getDaftarNamaSistem');
+              this.listAllUsersSistem = res;
+          } catch(e) { console.error("Gagal load data users"); }
+      }
+
+      this.cartTagihanSistem = [];
+      this.selectedTagihanSistem = '';
+      this.listTagihanSistem = [];
+
       if(action === 'edit' && row) {
         this.modal.identifier = row[0]; this.modal.formData = [...row];
       } else {
@@ -991,12 +898,88 @@ createApp({
       }
       this.modal.show = true;
     },
-    
+
+    async onNamaSistemChange(idxNama) {
+      let selectedNama = this.modal.formData[idxNama];
+      let userObj = this.listAllUsersSistem.find(u => u.nama === selectedNama);
+      
+      this.cartTagihanSistem = [];
+      this.selectedTagihanSistem = '';
+      this.listTagihanSistem = [];
+      
+      if(!userObj) return;
+
+      // Auto-fill form
+      const headers = this.tableData.header;
+      const idxJenis = headers.findIndex(h => h.toLowerCase() === 'jenis');
+      const idxInv = headers.findIndex(h => h.toLowerCase().includes('invoice'));
+      const idxTgl = headers.findIndex(h => h.toLowerCase().includes('tgl') || h.toLowerCase().includes('tanggal'));
+      const idxPembayaran = headers.findIndex(h => h.toLowerCase() === 'pembayaran');
+      const idxJml = headers.findIndex(h => h.toLowerCase().includes('jml. bayar') || h.toLowerCase().includes('jumlah'));
+
+      if(idxJenis !== -1) {
+          // Format role: Capitalize first letter
+          this.modal.formData[idxJenis] = userObj.role.charAt(0).toUpperCase() + userObj.role.slice(1);
+      }
+      if(idxTgl !== -1) this.modal.formData[idxTgl] = getToday();
+      if(idxInv !== -1) {
+          const d = new Date();
+          this.modal.formData[idxInv] = 'INV/' + d.getFullYear() + (d.getMonth()+1).toString().padStart(2,'0') + d.getDate().toString().padStart(2,'0') + '/' + Math.floor(1000 + Math.random() * 9000);
+      }
+      if(idxPembayaran !== -1) this.modal.formData[idxPembayaran] = "";
+      if(idxJml !== -1) this.modal.formData[idxJml] = 0;
+
+      // Fetch Tagihan atau Utang Berdasarkan Role
+      this.loading = true;
+      try {
+          const tagihanData = await this.apiCall('getTagihanAktifSistem', { nama: userObj.nama, roleTujuan: userObj.role });
+          this.listTagihanSistem = tagihanData;
+          this.loading = false;
+      } catch(e) { this.loading = false; }
+    },
+
+    addTagihanSistemToCart() {
+        if(!this.selectedTagihanSistem) return;
+        const exists = this.cartTagihanSistem.find(i => i.id === this.selectedTagihanSistem.id);
+        if(exists) return this.toast('Tagihan sudah masuk keranjang!', 'warning');
+        
+        this.cartTagihanSistem.push({ ...this.selectedTagihanSistem, nilai_bayar: this.selectedTagihanSistem.sisa });
+        this.selectedTagihanSistem = ''; // Reset UI Select
+        
+        const idxPembayaran = this.tableData.header.findIndex(h => h.toLowerCase() === 'pembayaran');
+        this.updateFormDataPembayaran(idxPembayaran);
+    },
+
+    removeTagihanSistem(cartIdx, idxPembayaranHeader) {
+        this.cartTagihanSistem.splice(cartIdx, 1);
+        this.updateFormDataPembayaran(idxPembayaranHeader);
+    },
+
+    updateFormDataPembayaran(idxTriggered) {
+        const headers = this.tableData.header;
+        const idxPembayaran = headers.findIndex(h => h.toLowerCase() === 'pembayaran');
+        const idxJml = headers.findIndex(h => h.toLowerCase().includes('jml. bayar') || h.toLowerCase().includes('jumlah'));
+        
+        if(idxPembayaran !== -1) {
+            this.modal.formData[idxPembayaran] = this.cartTagihanSistem.map(c => c.jenis).join(', ');
+        }
+        if(idxJml !== -1) {
+            this.modal.formData[idxJml] = this.cartTagihanSistem.reduce((sum, item) => sum + Number(item.nilai_bayar || 0), 0);
+        }
+    },
+
     async saveData() {
       this.loading = true;
       const targetModule = this.view === 'pembayaran_siswa' ? 'pendapatan' : this.view;
       try {
-        const res = await this.apiCall('crudOperation', { crudAction: this.modal.action, moduleName: targetModule, rowData: this.modal.formData, identifierStr: this.modal.identifier });
+        let payload = { 
+            crudAction: this.modal.action, 
+            moduleName: targetModule, 
+            rowData: this.modal.formData, 
+            identifierStr: this.modal.identifier,
+            cartItems: this.view === 'pendapatan' ? this.cartTagihanSistem : []
+        };
+        const res = await this.apiCall('crudOperation', payload);
         this.loading = false;
         if(res.success) {
           this.modal.show = false; this.toast(res.message);
@@ -1007,15 +990,7 @@ createApp({
     },
     
     async deleteData(id, moduleName) {
-      const result = await Swal.fire({
-        title: 'Hapus Data?',
-        text: "Anda yakin ingin menghapus data ini secara permanen?",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Ya, Hapus!'
-      });
+      const result = await Swal.fire({ title: 'Hapus Data?', text: "Anda yakin menghapus data ini?", icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', cancelButtonColor: '#3085d6', confirmButtonText: 'Ya, Hapus!' });
       if(!result.isConfirmed) return;
       this.loading = true;
       try {
