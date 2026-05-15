@@ -278,7 +278,7 @@ Login: <span class="fw-bold text-warning text-uppercase"><i class="fa-solid fa-u
 <h5 class="fw-bold m-0 mb-3 mb-md-0"><i class="fa-solid fa-file-signature text-primary me-2"></i> Data Tagihan Siswa</h5>
 <div class="d-flex gap-2">
 <input type="text" class="form-control form-control-sm" placeholder="Cari Siswa..." v-model="searchTagihan">
-<button v-if="session.role !== 'siswa'" @click="modalBuatTagihan.show = true" class="btn btn-primary btn-sm shadow-sm" style="white-space: nowrap;"><i class="fa-solid fa-wand-magic-sparkles me-1"></i> Generate</button>
+<button v-if="session.role !== 'siswa'" @click="bukaModalBuatTagihan" class="btn btn-primary btn-sm shadow-sm" style="white-space: nowrap;"><i class="fa-solid fa-wand-magic-sparkles me-1"></i> Generate</button>
 </div>
 </div>
 <div class="table-responsive">
@@ -494,7 +494,7 @@ Login: <span class="fw-bold text-warning text-uppercase"><i class="fa-solid fa-u
 <div class="mb-3" v-if="formBuatTagihan.tipe === 'individu'">
 <label class="form-label fw-bold">Pilih Siswa</label>
 <div class="input-group">
-<input type="text" class="form-control bg-light" readonly :value="formBuatTagihan.siswa ? formBuatTagihan.siswa.nama : 'Pilih Siswa...'">
+<input type="text" class="form-control" v-model="searchSiswaInput" @input="formBuatTagihan.siswa = null" @keyup.enter="bukaModalPilihSiswa('tagihan')" placeholder="Ketik Nama/NIS Siswa...">
 <button class="btn btn-primary" @click="bukaModalPilihSiswa('tagihan')"><i class="fa-solid fa-magnifying-glass me-1"></i> Cari</button>
 </div>
 </div>
@@ -527,7 +527,7 @@ Login: <span class="fw-bold text-warning text-uppercase"><i class="fa-solid fa-u
 <label class="col-sm-3 col-form-label fw-bold">Pilih Siswa</label>
 <div class="col-sm-9">
 <div class="input-group">
-<input type="text" class="form-control bg-light" readonly :value="formBayar.siswa ? formBayar.siswa.nama + ' (' + formBayar.siswa.nis + ')' : ''" placeholder="Pilih Data Siswa...">
+<input type="text" class="form-control" v-model="searchSiswaInput" @input="formBayar.siswa = null" @keyup.enter="bukaModalPilihSiswa('bayar')" placeholder="Ketik Nama/NIS Siswa...">
 <button @click="bukaModalPilihSiswa('bayar')" class="btn btn-primary"><i class="fa-solid fa-magnifying-glass me-1"></i> Cari</button>
 </div>
 </div>
@@ -582,13 +582,19 @@ Login: <span class="fw-bold text-warning text-uppercase"><i class="fa-solid fa-u
 <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
 <h6 class="m-0 fw-bold text-primary"><i class="fa-solid fa-users me-2"></i> Pilih Data Siswa</h6><button @click="modalSiswa.show = false" class="btn-close"></button>
 </div>
-<div class="table-responsive" style="max-height: 350px;">
+<div class="mb-2">
+<input type="text" class="form-control form-control-sm" v-model="searchSiswaInput" placeholder="Filter Nama/NIS di sini...">
+</div>
+<div class="table-responsive" style="max-height: 300px;">
 <table class="table table-hover table-sm align-middle">
 <thead class="table-light"><tr><th>NIS</th><th>Nama Siswa</th><th>Kelas</th><th class="text-center">Pilih</th></tr></thead>
 <tbody>
-<tr v-for="(s, idx) in listSiswa" :key="idx">
+<tr v-for="(s, idx) in filteredListSiswa" :key="idx">
 <td>{{ s.nis }}</td><td class="fw-bold">{{ s.nama }}</td><td>{{ s.kelas }}</td>
 <td class="text-center"><button @click="pilihSiswa(s)" class="btn btn-success btn-sm py-1 px-3 shadow-sm"><i class="fa-solid fa-check"></i></button></td>
+</tr>
+<tr v-if="filteredListSiswa.length === 0">
+<td colspan="4" class="text-center text-muted py-3">Siswa tidak ditemukan.</td>
 </tr>
 </tbody>
 </table>
@@ -684,8 +690,10 @@ createApp({
       searchTagihan: '', expandedTagihan: null,
       cetakData: null, cetakRiwayatData: null, listKelas: [],
       
-      // Variabel Dropdown Baru
       listJenisPendapatan: [], listKategoriPengeluaran: [],
+
+      // PERBAIKAN: Variabel baru untuk input text pencarian yang bisa diketik
+      searchSiswaInput: '', 
 
       modalBuatTagihan: { show: false },
       formBuatTagihan: { tipe: 'semua', kelasTarget: '', siswa: null, jenis: '', nominal: '' },
@@ -698,6 +706,14 @@ createApp({
   },
   computed: {
     totalTagihanCart() { return this.formBayar.items.reduce((sum, item) => sum + Number(item.nilai_bayar || 0), 0); },
+    
+    // PERBAIKAN: Computed property untuk filter list siswa berdasarkan searchSiswaInput
+    filteredListSiswa() {
+      if (!this.searchSiswaInput) return this.listSiswa;
+      let s = this.searchSiswaInput.toLowerCase();
+      return this.listSiswa.filter(x => x.nama.toLowerCase().includes(s) || x.nis.toString().toLowerCase().includes(s));
+    },
+
     filteredGroupedHistory() {
       let groups = {};
       this.historyPembayaranSiswa.forEach(row => {
@@ -736,7 +752,7 @@ createApp({
     if (localSess) {
       this.session = JSON.parse(localSess);
       this.isLoggedIn = true;
-      this.fetchDropdowns(); // Ambil list dropdown di awal
+      this.fetchDropdowns();
       this.go(this.session.lastView || 'dashboard');
     }
   },
@@ -764,7 +780,6 @@ createApp({
     toggleHistory(nama) { this.expandedHistory = this.expandedHistory === nama ? null : nama; },
     toggleTagihan(nama) { this.expandedTagihan = this.expandedTagihan === nama ? null : nama; },
 
-    // Fungsi Fetch List Dropdown
     async fetchDropdowns() {
       try {
         const res = await this.apiCall('getDropdownData');
@@ -837,6 +852,12 @@ createApp({
       } catch(e) {}
     },
     
+    bukaModalBuatTagihan() {
+      this.formBuatTagihan = { tipe: 'semua', kelasTarget: '', siswa: null, jenis: '', nominal: '' };
+      this.searchSiswaInput = '';
+      this.modalBuatTagihan.show = true;
+    },
+
     async submitBuatTagihan() {
       if(!this.formBuatTagihan.jenis || !this.formBuatTagihan.nominal) return Swal.fire('Peringatan', 'Lengkapi Jenis dan Nominal Tagihan', 'warning');
       if(this.formBuatTagihan.tipe === 'individu' && !this.formBuatTagihan.siswa) return Swal.fire('Peringatan', 'Pilih Siswa terlebih dahulu', 'warning');
@@ -850,6 +871,7 @@ createApp({
           this.toast(res.message);
           this.modalBuatTagihan.show = false;
           this.formBuatTagihan = { tipe: 'semua', kelasTarget:'', siswa: null, jenis: '', nominal: '' };
+          this.searchSiswaInput = '';
           if(this.view === 'tagihan_siswa') this.fetchTableData();
         } else Swal.fire('Gagal', res.message, 'error');
       } catch(err) { this.loading = false; Swal.fire('Error', err.message, 'error'); }
@@ -857,8 +879,10 @@ createApp({
 
     bukaModalBayar() {
       this.formBayar = { invoice: 'INV/' + new Date().getTime().toString().slice(-6), tglBayar: getToday(), siswa: null, items: [] };
+      this.searchSiswaInput = ''; 
       this.modalBayar.show = true;
     },
+    
     async bukaModalPilihSiswa(context) {
       this.modalSiswa.context = context;
       this.loading = true;
@@ -868,7 +892,10 @@ createApp({
         if(context === 'tagihan' && this.listKelas.length === 0) this.fetchDaftarKelas();
       } catch(err) { this.loading = false; }
     },
+    
     pilihSiswa(s) {
+      // PERBAIKAN: Menampilkan nama dan NIS pada form text input setelah siswa dipilih
+      this.searchSiswaInput = s.nama + ' (' + s.nis + ')'; 
       if(this.modalSiswa.context === 'bayar') {
         this.formBayar.siswa = s; this.formBayar.items = [];
       } else {
@@ -876,6 +903,7 @@ createApp({
       }
       this.modalSiswa.show = false;
     },
+
     async bukaModalJenisTagihan() {
       if(!this.formBayar.siswa) return;
       this.loading = true;
@@ -947,13 +975,11 @@ createApp({
         this.modal.identifier = null; 
         this.modal.formData = new Array(this.tableData.header.length).fill('');
         
-        // Auto Nomor Baris
         if (this.tableData.header.length > 0 && this.tableData.header[0].toLowerCase() === 'no') {
           let targetArr = this.view === 'pembayaran_siswa' ? this.historyPembayaranSiswa : this.tableData.body;
           this.modal.formData[0] = targetArr.length > 0 ? Number(targetArr[targetArr.length-1][0]) + 1 : 1;
         }
 
-        // Set default values untuk Tgl Bayar dan Generate No. Invoice
         this.tableData.header.forEach((head, i) => {
           let h = head.toLowerCase();
           if (h.includes('invoice')) {
